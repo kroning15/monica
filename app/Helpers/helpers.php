@@ -123,7 +123,8 @@ if (! function_exists('readVersion')) {
             $command = Str::of($gitCommand)
                 ->start('git ')
                 ->replaceStart('git', 'git --git-dir "'.base_path('.git').'"');
-            $content = trim(exec("$command 2>".(substr(php_uname(), 0, 7) === 'Windows' ? 'NUL' : '/dev/null')));
+            $gitOutput = exec("$command 2>".(substr(php_uname(), 0, 7) === 'Windows' ? 'NUL' : '/dev/null'));
+            $content = is_string($gitOutput) ? trim($gitOutput) : null;
         }
 
         $version = $content ?? $default;

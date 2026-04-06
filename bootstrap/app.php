@@ -8,6 +8,7 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use LaravelWebauthn\Http\Middleware\WebauthnMiddleware;
 use Sentry\Laravel\Integration;
+use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -44,5 +45,18 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         Integration::handles($exceptions);
+
+        $exceptions->report(function (Throwable $throwable): void {
+            if (! getenv('VERCEL_ENV')) {
+                return;
+            }
+
+            error_log(sprintf(
+                '[VercelRuntime] %s in %s:%d',
+                $throwable->getMessage(),
+                $throwable->getFile(),
+                $throwable->getLine()
+            ));
+        });
     })
     ->create();

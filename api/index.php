@@ -4,15 +4,26 @@ declare(strict_types=1);
 
 // Prevent PHP deprecation notices from being rendered to end users on Vercel.
 if (getenv('VERCEL_ENV')) {
-    // Laravel caches normally default to bootstrap/cache, which is read-only on Vercel.
-    putenv('APP_PACKAGES_CACHE=/tmp/packages.php');
-    putenv('APP_SERVICES_CACHE=/tmp/services.php');
-    putenv('APP_CONFIG_CACHE=/tmp/config.php');
-    putenv('APP_ROUTES_CACHE=/tmp/routes.php');
-    putenv('APP_EVENTS_CACHE=/tmp/events.php');
-    putenv('VIEW_COMPILED_PATH=/tmp/storage/framework/views');
+    // Nightwatch instrumentation expects a long-running agent and can fail on serverless.
+    putenv('NIGHTWATCH_ENABLED=false');
 
-    @mkdir('/tmp/storage/framework/views', 0777, true);
+    $deploymentId = getenv('VERCEL_DEPLOYMENT_ID') ?: 'unknown';
+    $runtimeCacheRoot = '/tmp/laravel-cache-'.$deploymentId;
+    $viewCachePath = $runtimeCacheRoot.'/views';
+    $packagesCachePath = $runtimeCacheRoot.'/packages.php';
+
+    @mkdir($viewCachePath, 0777, true);
+
+    // Keep package discovery cache on writable storage for serverless runtime.
+    putenv('APP_PACKAGES_CACHE='.$packagesCachePath);
+    putenv('VIEW_COMPILED_PATH='.$viewCachePath);
+
+    // Prefer HTTPS URL generation when deployed behind Vercel's proxy.
+    $requestHost = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? getenv('VERCEL_URL');
+    if ($requestHost) {
+        putenv('APP_URL=https://'.$requestHost);
+    }
+    putenv('APP_FORCE_URL=true');
 
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
