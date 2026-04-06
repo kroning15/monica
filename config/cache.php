@@ -3,6 +3,12 @@
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
+$defaultCacheStore = env('CACHE_STORE', env('CACHE_DRIVER', 'database'));
+if (env('VERCEL_ENV') && in_array($defaultCacheStore, ['database', 'file'], true)) {
+    // Avoid DB/file cache defaults on Vercel unless explicitly overridden.
+    $defaultCacheStore = 'array';
+}
+
 $config = [
 
     /*
@@ -16,7 +22,7 @@ $config = [
     |
     */
 
-    'default' => env('CACHE_STORE', env('CACHE_DRIVER', 'database')),
+    'default' => $defaultCacheStore,
 
     /*
     |--------------------------------------------------------------------------

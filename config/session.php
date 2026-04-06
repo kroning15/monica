@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Str;
 
+$defaultSessionDriver = env('SESSION_DRIVER', 'database');
+if (env('VERCEL_ENV') && $defaultSessionDriver === 'database') {
+    // Database sessions require a sessions table; prefer cookie sessions on Vercel.
+    $defaultSessionDriver = 'cookie';
+}
+
 return [
 
     /*
@@ -18,7 +24,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => $defaultSessionDriver,
 
     /*
     |--------------------------------------------------------------------------
