@@ -7,7 +7,7 @@
     "api/index.php": {
       "runtime": "vercel-php@0.9.0",
       "maxDuration": 30,
-      "excludeFiles": "{.git/**,.github/**,.husky/**,.vscode/**,.devcontainer/**,node_modules/**,.yarn/**,tests/**,scripts/**,bootstrap/ssr/**,resources/js/**,resources/css/**,storage/logs/**,storage/framework/cache/**,storage/framework/testing/**,storage/framework/sessions/**,storage/framework/views/**,public/build/**,**/*.md,docker-compose.yml,sail-init.sh}"
+      "excludeFiles": "{node_modules/**,.yarn/**,bootstrap/ssr/**,tests/**,scripts/**,resources/**,.git/**,.github/**}"
     }
   },
   "routes": [
