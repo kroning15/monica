@@ -126,6 +126,11 @@ if (! function_exists('readVersion')) {
             $content = trim(exec("$command 2>".(substr(php_uname(), 0, 7) === 'Windows' ? 'NUL' : '/dev/null')));
         }
 
-        return trim($content ?? $default);
+        $version = $content ?? $default;
+        if ($version === null) {
+            return null;
+        }
+
+        return trim($version);
     }
 }
