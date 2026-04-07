@@ -11,11 +11,19 @@ if (getenv('VERCEL_ENV')) {
     $runtimeCacheRoot = '/tmp/laravel-cache-'.$deploymentId;
     $viewCachePath = $runtimeCacheRoot.'/views';
     $packagesCachePath = $runtimeCacheRoot.'/packages.php';
+    $servicesCachePath = $runtimeCacheRoot.'/services.php';
+    $configCachePath = $runtimeCacheRoot.'/config.php';
+    $routesCachePath = $runtimeCacheRoot.'/routes.php';
+    $eventsCachePath = $runtimeCacheRoot.'/events.php';
 
     @mkdir($viewCachePath, 0777, true);
 
-    // Keep package discovery cache on writable storage for serverless runtime.
+    // Keep framework cache artifacts on writable storage for serverless runtime.
     putenv('APP_PACKAGES_CACHE='.$packagesCachePath);
+    putenv('APP_SERVICES_CACHE='.$servicesCachePath);
+    putenv('APP_CONFIG_CACHE='.$configCachePath);
+    putenv('APP_ROUTES_CACHE='.$routesCachePath);
+    putenv('APP_EVENTS_CACHE='.$eventsCachePath);
     putenv('VIEW_COMPILED_PATH='.$viewCachePath);
 
     // Prefer HTTPS URL generation when deployed behind Vercel's proxy.
