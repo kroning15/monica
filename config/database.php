@@ -9,6 +9,11 @@ if (defined('Pdo\\Mysql::ATTR_SSL_CA')) {
     $mysqlSslCaOption = constant('PDO::MYSQL_ATTR_SSL_CA');
 }
 
+$mysqlConnectionOptions = [];
+if ($mysqlSslCaOption !== null) {
+    $mysqlConnectionOptions[$mysqlSslCaOption] = env('MYSQL_ATTR_SSL_CA');
+}
+
 return [
 
     /*
@@ -71,9 +76,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                $mysqlSslCaOption => env('MYSQL_ATTR_SSL_CA'),
-            ], static fn (mixed $value, mixed $key): bool => $key !== null && $value !== null) : [],
+            'options' => extension_loaded('pdo_mysql')
+                ? array_filter($mysqlConnectionOptions, static fn (mixed $value): bool => $value !== null)
+                : [],
         ],
 
         'pgsql' => [
