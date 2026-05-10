@@ -5,7 +5,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
-$isVercelRuntime = env('VERCEL') || env('VERCEL_ENV');
+$isVercelRuntime = env('MONICA_VERCEL_RUNTIME') || env('VERCEL') || env('VERCEL_ENV') || env('LAMBDA_TASK_ROOT');
 $defaultLogChannel = env('LOG_CHANNEL', 'stack');
 if ($isVercelRuntime && $defaultLogChannel === 'stack') {
     // Vercel exposes stderr in runtime logs; file logs are not practical there.

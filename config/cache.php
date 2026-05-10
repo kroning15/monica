@@ -3,7 +3,7 @@
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-$isVercelRuntime = env('VERCEL') || env('VERCEL_ENV');
+$isVercelRuntime = env('MONICA_VERCEL_RUNTIME') || env('VERCEL') || env('VERCEL_ENV') || env('LAMBDA_TASK_ROOT');
 $defaultCacheStore = env('CACHE_STORE', env('CACHE_DRIVER', 'database'));
 if ($isVercelRuntime && in_array($defaultCacheStore, ['database', 'file'], true)) {
     // Avoid DB/file cache defaults on Vercel unless explicitly overridden.

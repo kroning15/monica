@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Str;
 
-$isVercelRuntime = env('VERCEL') || env('VERCEL_ENV');
+$isVercelRuntime = env('MONICA_VERCEL_RUNTIME') || env('VERCEL') || env('VERCEL_ENV') || env('LAMBDA_TASK_ROOT');
 $defaultSessionDriver = env('SESSION_DRIVER', 'database');
 if ($isVercelRuntime && $defaultSessionDriver === 'database') {
     // Database sessions require a sessions table; prefer cookie sessions on Vercel.

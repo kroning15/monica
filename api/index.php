@@ -13,8 +13,18 @@ function setRuntimeEnv(string $key, string $value): void
     $_SERVER[$key] = $value;
 }
 
+$isVercelRuntime = (bool) (
+    getenv('VERCEL')
+    || getenv('VERCEL_ENV')
+    || getenv('LAMBDA_TASK_ROOT')
+    || is_dir('/var/task')
+);
+
 // Prevent PHP deprecation notices from being rendered to end users on Vercel.
-if (getenv('VERCEL') || getenv('VERCEL_ENV')) {
+if ($isVercelRuntime) {
+    // Marker for config files that run after this bootstrap.
+    setRuntimeEnv('MONICA_VERCEL_RUNTIME', '1');
+
     // Nightwatch instrumentation expects a long-running agent and can fail on serverless.
     setRuntimeEnv('NIGHTWATCH_ENABLED', 'false');
 

@@ -47,15 +47,14 @@ return Application::configure(basePath: dirname(__DIR__))
         Integration::handles($exceptions);
 
         $exceptions->report(function (Throwable $throwable): void {
-            if (! (getenv('VERCEL') || getenv('VERCEL_ENV'))) {
-                return;
-            }
-
             error_log(sprintf(
-                '[VercelRuntime] %s in %s:%d',
+                '[RuntimeException] %s: %s in %s:%d (path=%s method=%s)',
+                $throwable::class,
                 $throwable->getMessage(),
                 $throwable->getFile(),
-                $throwable->getLine()
+                $throwable->getLine(),
+                request()?->path() ?? '-',
+                request()?->method() ?? '-'
             ));
         });
     })
