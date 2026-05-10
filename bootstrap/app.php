@@ -58,6 +58,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 request()?->path() ?? '-',
                 request()?->method() ?? '-'
             ));
-        })->stop();
+        });
     })
     ->create();

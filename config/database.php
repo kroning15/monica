@@ -14,6 +14,30 @@ if ($mysqlSslCaOption !== null) {
     $mysqlConnectionOptions[$mysqlSslCaOption] = env('MYSQL_ATTR_SSL_CA');
 }
 
+$pgsqlOptions = env('DB_OPTIONS');
+$databaseUrl = env('DATABASE_URL');
+
+if ((! is_string($pgsqlOptions) || trim($pgsqlOptions) === '') && is_string($databaseUrl) && $databaseUrl !== '') {
+    $query = [];
+    parse_str((string) parse_url($databaseUrl, PHP_URL_QUERY), $query);
+
+    if (! empty($query['options']) && is_string($query['options'])) {
+        $pgsqlOptions = $query['options'];
+    }
+}
+
+if (! is_string($pgsqlOptions) || trim($pgsqlOptions) === '') {
+    $pgsqlHost = parse_url((string) $databaseUrl, PHP_URL_HOST) ?: env('DB_HOST', '127.0.0.1');
+
+    if (is_string($pgsqlHost) && str_ends_with($pgsqlHost, '.neon.tech')) {
+        $endpoint = explode('.', $pgsqlHost)[0] ?? '';
+
+        if ($endpoint !== '') {
+            $pgsqlOptions = sprintf('endpoint=%s', $endpoint);
+        }
+    }
+}
+
 return [
 
     /*
@@ -93,6 +117,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
+            'options' => is_string($pgsqlOptions) ? $pgsqlOptions : '',
             'sslmode' => 'prefer',
         ],
 
