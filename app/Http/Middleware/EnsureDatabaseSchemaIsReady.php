@@ -48,6 +48,9 @@ class EnsureDatabaseSchemaIsReady
     private function runMigrationsIfNeeded(Request $request): void
     {
         $requiredTables = ['users', 'currencies'];
+        $requiredColumns = [
+            'contact_tasks' => ['deleted_at'],
+        ];
 
         try {
             $missingTables = [];
@@ -57,7 +60,20 @@ class EnsureDatabaseSchemaIsReady
                 }
             }
 
-            if ($missingTables === []) {
+            $missingColumns = [];
+            foreach ($requiredColumns as $table => $columns) {
+                if (! Schema::hasTable($table)) {
+                    continue;
+                }
+
+                foreach ($columns as $column) {
+                    if (! Schema::hasColumn($table, $column)) {
+                        $missingColumns[] = $table.'.'.$column;
+                    }
+                }
+            }
+
+            if ($missingTables === [] && $missingColumns === []) {
                 return;
             }
         } catch (Throwable $throwable) {
@@ -96,10 +112,24 @@ class EnsureDatabaseSchemaIsReady
                 }
             }
 
-            if ($missingTables !== []) {
+            $missingColumns = [];
+            foreach ($requiredColumns as $table => $columns) {
+                if (! Schema::hasTable($table)) {
+                    continue;
+                }
+
+                foreach ($columns as $column) {
+                    if (! Schema::hasColumn($table, $column)) {
+                        $missingColumns[] = $table.'.'.$column;
+                    }
+                }
+            }
+
+            if ($missingTables !== [] || $missingColumns !== []) {
                 error_log(sprintf(
-                    '[AutoMigrate] migrate completed but required tables are missing: %s (path=%s method=%s)',
+                    '[AutoMigrate] migrate completed but schema is still missing. tables=[%s] columns=[%s] (path=%s method=%s)',
                     implode(', ', $missingTables),
+                    implode(', ', $missingColumns),
                     $request->path(),
                     $request->method()
                 ));
