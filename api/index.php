@@ -54,6 +54,47 @@ if ($isVercelRuntime) {
     }
     setRuntimeEnv('APP_FORCE_URL', 'true');
 
+    // Neon workaround for environments with older libpq/SNI support.
+    $databaseUrl = getenv('DATABASE_URL');
+    if (is_string($databaseUrl) && $databaseUrl !== '') {
+        $urlParts = parse_url($databaseUrl);
+        $host = is_array($urlParts) ? ($urlParts['host'] ?? null) : null;
+        $password = is_array($urlParts) ? ($urlParts['pass'] ?? null) : null;
+
+        if (is_string($host) && str_ends_with($host, '.neon.tech')) {
+            $endpoint = explode('.', $host)[0] ?? '';
+
+            if ($endpoint !== '') {
+                $dbPassword = getenv('DB_PASSWORD');
+                if (is_string($dbPassword) && $dbPassword !== '' && ! str_starts_with($dbPassword, 'endpoint=')) {
+                    setRuntimeEnv('DB_PASSWORD', 'endpoint='.$endpoint.';'.$dbPassword);
+                }
+
+                if (is_string($password) && $password !== '' && ! str_starts_with($password, 'endpoint=')) {
+                    $urlParts['pass'] = 'endpoint='.$endpoint.';'.$password;
+
+                    $scheme = isset($urlParts['scheme']) ? $urlParts['scheme'].'://' : '';
+                    $userInfo = '';
+                    if (isset($urlParts['user'])) {
+                        $userInfo = rawurlencode((string) $urlParts['user']);
+                        $userInfo .= ':'.rawurlencode((string) $urlParts['pass']);
+                        $userInfo .= '@';
+                    }
+
+                    $port = isset($urlParts['port']) ? ':'.$urlParts['port'] : '';
+                    $path = $urlParts['path'] ?? '';
+                    $query = isset($urlParts['query']) && $urlParts['query'] !== '' ? '?'.$urlParts['query'] : '';
+                    $fragment = isset($urlParts['fragment']) ? '#'.$urlParts['fragment'] : '';
+
+                    setRuntimeEnv(
+                        'DATABASE_URL',
+                        $scheme.$userInfo.$host.$port.$path.$query.$fragment
+                    );
+                }
+            }
+        }
+    }
+
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
     error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
