@@ -57,6 +57,28 @@ if ($isVercelRuntime) {
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
     error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+    register_shutdown_function(static function (): void {
+        $error = error_get_last();
+        if (! is_array($error)) {
+            return;
+        }
+
+        $fatalErrorTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR, E_USER_ERROR];
+        if (! in_array($error['type'] ?? null, $fatalErrorTypes, true)) {
+            return;
+        }
+
+        error_log(sprintf(
+            '[ShutdownFatal] type=%s message=%s file=%s line=%s path=%s method=%s',
+            (string) ($error['type'] ?? ''),
+            (string) ($error['message'] ?? ''),
+            (string) ($error['file'] ?? ''),
+            (string) ($error['line'] ?? ''),
+            $_SERVER['REQUEST_URI'] ?? '-',
+            $_SERVER['REQUEST_METHOD'] ?? '-'
+        ));
+    });
 }
 
 require __DIR__.'/../public/index.php';
