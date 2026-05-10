@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
         Integration::handles($exceptions);
 
         $exceptions->report(function (Throwable $throwable): void {
-            if (! getenv('VERCEL_ENV')) {
+            if (! (getenv('VERCEL') || getenv('VERCEL_ENV'))) {
                 return;
             }
 

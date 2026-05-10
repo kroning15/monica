@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Str;
 
+$isVercelRuntime = env('VERCEL') || env('VERCEL_ENV');
 $defaultSessionDriver = env('SESSION_DRIVER', 'database');
-if (env('VERCEL_ENV') && $defaultSessionDriver === 'database') {
+if ($isVercelRuntime && $defaultSessionDriver === 'database') {
     // Database sessions require a sessions table; prefer cookie sessions on Vercel.
     $defaultSessionDriver = 'cookie';
 }

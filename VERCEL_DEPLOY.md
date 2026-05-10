@@ -24,8 +24,13 @@ At minimum, set:
 
 Recommended for serverless:
 
-- `CACHE_STORE=database`
-- `SESSION_DRIVER=database`
+- `CACHE_STORE=array`
+- `SESSION_DRIVER=cookie`
+
+Optional if you already run external infrastructure:
+
+- `CACHE_STORE=redis`
+- `SESSION_DRIVER=redis`
 
 ## 3) Prepare A Managed Database
 

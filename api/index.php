@@ -14,7 +14,7 @@ function setRuntimeEnv(string $key, string $value): void
 }
 
 // Prevent PHP deprecation notices from being rendered to end users on Vercel.
-if (getenv('VERCEL_ENV')) {
+if (getenv('VERCEL') || getenv('VERCEL_ENV')) {
     // Nightwatch instrumentation expects a long-running agent and can fail on serverless.
     setRuntimeEnv('NIGHTWATCH_ENABLED', 'false');
 
