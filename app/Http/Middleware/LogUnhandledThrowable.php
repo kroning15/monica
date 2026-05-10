@@ -24,8 +24,7 @@ class LogUnhandledThrowable
                 $request->method()
             ));
 
-            throw $throwable;
+            return response('Internal Server Error', 500);
         }
     }
 }
-
