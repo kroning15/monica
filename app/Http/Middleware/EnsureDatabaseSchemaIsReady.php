@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -76,6 +77,14 @@ class EnsureDatabaseSchemaIsReady
             if ($missingTables === [] && $missingColumns === []) {
                 return;
             }
+
+            if ($missingTables === [] && $missingColumns === ['contact_tasks.deleted_at']) {
+                $this->addMissingContactTaskDeletedAtColumn();
+
+                if (Schema::hasColumn('contact_tasks', 'deleted_at')) {
+                    return;
+                }
+            }
         } catch (Throwable $throwable) {
             error_log(sprintf(
                 '[AutoMigrate] Unable to check schema: %s in %s:%d (path=%s method=%s)',
@@ -90,7 +99,6 @@ class EnsureDatabaseSchemaIsReady
         try {
             $exitCode = Artisan::call('migrate', [
                 '--force' => true,
-                '--isolated' => true,
             ]);
 
             if ($exitCode !== 0) {
@@ -145,5 +153,20 @@ class EnsureDatabaseSchemaIsReady
                 $request->method()
             ));
         }
+    }
+
+    private function addMissingContactTaskDeletedAtColumn(): void
+    {
+        if (! Schema::hasTable('contact_tasks')) {
+            return;
+        }
+
+        if (Schema::hasColumn('contact_tasks', 'deleted_at')) {
+            return;
+        }
+
+        Schema::table('contact_tasks', function (Blueprint $table): void {
+            $table->timestamp('deleted_at')->nullable()->index();
+        });
     }
 }
