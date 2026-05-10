@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CreateAccount extends BaseService implements ServiceInterface
 {
@@ -70,6 +72,15 @@ class CreateAccount extends BaseService implements ServiceInterface
             'author_id' => $user->id,
         ];
 
-        SetupAccount::dispatch($request)->onQueue('high');
+        try {
+            SetupAccount::dispatch($request)->onQueue('high');
+        } catch (Throwable $e) {
+            Log::error('Account bootstrap failed right after registration.', [
+                'account_id' => $this->account->id,
+                'user_id' => $user->id,
+                'exception_class' => $e::class,
+                'exception_message' => $e->getMessage(),
+            ]);
+        }
     }
 }
