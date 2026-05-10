@@ -184,7 +184,6 @@ if (config('services.telegram-bot-api.token') !== null) {
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified',
 ])->group(function () {
     // vaults
     Route::prefix('vaults')->group(function () {

@@ -132,6 +132,8 @@ if (! function_exists('readVersion')) {
             return null;
         }
 
-        return trim($version);
+        $version = trim((string) $version);
+
+        return $version !== '' ? $version : null;
     }
 }

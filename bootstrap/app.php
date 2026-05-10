@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureDatabaseSchemaIsReady;
 use App\Http\Middleware\EnsureSignupIsEnabled;
 use App\Http\Middleware\LogUnhandledThrowable;
 use Illuminate\Foundation\Application;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->prepend(EnsureDatabaseSchemaIsReady::class);
         $middleware->prepend(LogUnhandledThrowable::class);
         $middleware->throttleApi();
         $middleware->validateCsrfTokens(except: [

@@ -159,13 +159,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
      */
     public function sendEmailVerificationNotification(): void
     {
-        if (config('mail.default') !== 'smtp' || (
-            config('mail.mailers.smtp.username') !== null && config('mail.mailers.smtp.password') !== null
-        )) {
-            parent::sendEmailVerificationNotification();
-        } else {
-            $this->markEmailAsVerified();
-        }
+        // Personal/self-hosted mode on Vercel: skip email verification flow and verify immediately.
+        $this->markEmailAsVerified();
     }
 
     /**
