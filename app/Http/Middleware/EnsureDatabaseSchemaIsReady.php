@@ -78,10 +78,16 @@ class EnsureDatabaseSchemaIsReady
                 return;
             }
 
-            if ($missingTables === [] && $missingColumns === ['contact_tasks.deleted_at']) {
-                $this->addMissingContactTaskDeletedAtColumn();
+            if ($missingTables === [] && $this->containsOnlyDeletedAtColumns($missingColumns)) {
+                $this->addMissingDeletedAtColumns($missingColumns);
 
-                if (Schema::hasColumn('contact_tasks', 'deleted_at')) {
+                $stillMissing = array_filter($missingColumns, function (string $column): bool {
+                    [$table, $field] = explode('.', $column, 2);
+
+                    return ! Schema::hasTable($table) || ! Schema::hasColumn($table, $field);
+                });
+
+                if ($stillMissing === []) {
                     return;
                 }
             }
@@ -155,18 +161,32 @@ class EnsureDatabaseSchemaIsReady
         }
     }
 
-    private function addMissingContactTaskDeletedAtColumn(): void
+    private function containsOnlyDeletedAtColumns(array $missingColumns): bool
     {
-        if (! Schema::hasTable('contact_tasks')) {
-            return;
+        return $missingColumns !== []
+            && array_reduce($missingColumns, function (bool $carry, string $column): bool {
+                return $carry && str_ends_with($column, '.deleted_at');
+            }, true);
+    }
+
+    private function addMissingDeletedAtColumns(array $missingColumns): void
+    {
+        $tables = [];
+        foreach ($missingColumns as $column) {
+            [$table, $field] = explode('.', $column, 2);
+            if ($field === 'deleted_at') {
+                $tables[] = $table;
+            }
         }
 
-        if (Schema::hasColumn('contact_tasks', 'deleted_at')) {
-            return;
-        }
+        foreach (array_unique($tables) as $tableName) {
+            if (! Schema::hasTable($tableName) || Schema::hasColumn($tableName, 'deleted_at')) {
+                continue;
+            }
 
-        Schema::table('contact_tasks', function (Blueprint $table): void {
-            $table->timestamp('deleted_at')->nullable()->index();
-        });
+            Schema::table($tableName, function (Blueprint $table): void {
+                $table->timestamp('deleted_at')->nullable()->index();
+            });
+        }
     }
 }
