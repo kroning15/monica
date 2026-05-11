@@ -50,6 +50,9 @@ class EnsureDatabaseSchemaIsReady
     {
         $requiredTables = ['users', 'currencies'];
         $requiredColumns = [
+            'contacts' => ['deleted_at'],
+            'groups' => ['deleted_at'],
+            'contact_important_dates' => ['deleted_at'],
             'contact_tasks' => ['deleted_at'],
         ];
 
